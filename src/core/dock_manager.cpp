@@ -19,6 +19,12 @@ void DockManager::removeApp(Application *app)
 
 void DockManager::render()
 {
+    int dockHeight = M5EPD_DOCK_HEIGHT; // Example icon size
+    int x = 60;
+    int y = display.height() - dockHeight * 1.1;
+    int dockWidth = display.width() * 0.3;
+    int round = dockHeight / 2;
+
     Serial.println("ENTER RENDER");
     display.setWindow(display.width() * 0.25, display.height() - dockHeight, display.width() * 0.50, dockHeight);
     if (!isDirty)
@@ -26,11 +32,6 @@ void DockManager::render()
         return;
     }
     Serial.println("WINDOW SET");
-
-    int x = 60;
-    int y = display.height() - dockHeight * 1.1;
-    int dockWidth = display.width() * 0.3;
-    int round = dockHeight / 2;
 
     // if (!windowManager->hasActiveWindow())
     // {
@@ -66,19 +67,7 @@ void DockManager::render()
         display.setCursor(iconX, iconY + dockHeight + 2);
     }
 
-    m5::rtc_date_t date;
-    M5.Rtc.getDate(&date);
-    String year = String(date.year);
-    String month = String(date.month);
-    String day = String(date.date);
-
-    display.setTextSize(3);
-    display.setTextColor(TFT_BLACK, TFT_WHITE);
-
-    String battery = String(M5.Power.getBatteryLevel());
-
-    display.fillRoundRect(display.width() * 0.65, y + dockHeight * 0.1, display.width() * 0.5, dockHeight * 0.95, dockHeight * .5, TFT_WHITE);
-    display.drawString(battery + "% ; " + year + "-" + month + "-" + day, display.width() * 0.68, (y + dockHeight * 0.35));
+    updateDateBattery();
 
     if (isFirstRender)
     {
@@ -90,6 +79,87 @@ void DockManager::render()
     display.display();
     display.display();
     isDirty = false;
+}
+
+void DockManager::updateDateBattery()
+{
+    int x = 60;
+    int y = display.height() - dockHeight * 1.1;
+    int dockWidth = display.width() * 0.3;
+    int round = dockHeight / 2;
+
+    m5::rtc_date_t date;
+    M5.Rtc.getDate(&date);
+    String year = String(date.year);
+    String month = String(date.month);
+    String day = String(date.date);
+
+    display.setTextSize(3);
+    display.setTextColor(TFT_BLACK, TFT_WHITE);
+    int mv = getBatteryVoltage();
+    Serial.println("VOLTAGE");
+    Serial.println(mv);
+    String battery = String(averageBatteryLevel(mv));
+
+    String batterySymbol = String("%");
+    if (M5.Power.isCharging())
+    {
+        batterySymbol = "|";
+    }
+
+    display.fillRoundRect(display.width() * 0.65, y + dockHeight * 0.1, display.width() * 0.5, dockHeight * 0.95, dockHeight * .5, TFT_WHITE);
+    display.drawString(battery + batterySymbol + " ; " + year + "-" + month + "-" + day, display.width() * 0.68, (y + dockHeight * 0.35));
+}
+
+void DockManager::batteryBegin()
+{
+    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_channel_atten(BAT_ADC_CHANNEL, ADC_ATTEN_DB_12);
+    _adc_chars = (esp_adc_cal_characteristics_t *)calloc(
+        1, sizeof(esp_adc_cal_characteristics_t));
+    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12,
+                             BASE_VOLATAGE, _adc_chars);
+
+    uint32_t raw_value = adc1_get_raw(ADC1_CHANNEL_7);
+    uint32_t measured_voltage = esp_adc_cal_raw_to_voltage(raw_value, _adc_chars);
+    float actual_voltage = 4.37 * 1000; // Convert 4.37V to mV (assuming the battery is fully charged and the full charge voltage is 4.37V)
+    float scale = actual_voltage / measured_voltage;
+    Serial.println("SCALE");
+    Serial.println(scale);
+}
+
+uint32_t DockManager::getBatteryVoltage()
+{
+    uint32_t adc_raw_value = 0;
+    for (uint16_t i = 0; i < ADC_FILTER_SAMPLE; i++)
+    {
+        adc_raw_value += adc1_get_raw(BAT_ADC_CHANNEL);
+    }
+
+    adc_raw_value = adc_raw_value / ADC_FILTER_SAMPLE;
+
+    uint32_t voltage =
+        (uint32_t)(esp_adc_cal_raw_to_voltage(adc_raw_value, _adc_chars) /
+                   SCALE);
+
+    filteredVoltage = ALPHA * voltage + (1 - ALPHA) * filteredVoltage;
+    return voltage;
+}
+
+int DockManager::averageBatteryLevel(int mv)
+{
+    const int minVoltage = BASE_VOLATAGE; // Minimum voltage in mV
+    const int maxVoltage = 4200;          // Maximum voltage in mV
+
+    // Ensure voltage is within range
+    if (mv < minVoltage)
+        mv = minVoltage;
+    if (mv > maxVoltage - 20)
+        mv = maxVoltage;
+
+    // Calculate charge level percentage
+    int level = (mv - minVoltage) * 100 / (maxVoltage - minVoltage);
+    return level;
 }
 
 void DockManager::handleTouchEvent(int x, int y)

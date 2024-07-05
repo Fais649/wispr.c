@@ -6,17 +6,27 @@
 #include "util/storage_manager.h"
 #include "util/app_loader.h"
 #include <CardKb.h>
+#include <esp_adc_cal.h>
+
+
 
 WindowManager windowManager;
 DockManager dockManager(&windowManager); // Pass the WindowManager reference
 StateManager stateManager;
 StorageManager storageManager;
 AppLoader appLoader;
+#define SLEEP_TIMEOUT 30 * 1000
+#define UPDATE_BATTERY_TIMEOUT 60 * 1000
+int lastAction;
+int lastBatteryUpdate;
 
 void setup()
 {
     Serial.begin(115200); // Start serial for debugging
     M5.begin();
+
+    delay(1000);
+    dockManager.batteryBegin();
 
     display.setRotation(1);
     display.setEpdMode(epd_fastest);
@@ -52,13 +62,45 @@ void setup()
 
     dockManager.render();
     Serial.println("dockmanager rendered!");
+    lastAction = millis();
+    lastBatteryUpdate = millis();
 }
 
 void loop()
 {
+    if (millis() - lastBatteryUpdate >= UPDATE_BATTERY_TIMEOUT) {
+        dockManager.updateDateBattery();
+        display.display();
+        lastBatteryUpdate = millis();
+    }
+
+    if (millis() - lastAction >= SLEEP_TIMEOUT)
+    {
+        display.fillCircle(display.width() * .5, display.height() - M5EPD_DOCK_HEIGHT / 2, 16, TFT_WHITE);
+        display.fillCircle((display.width() * .5) + 15, display.height() - (M5EPD_DOCK_HEIGHT * .7), 18, TFT_BLACK);
+        display.display();
+
+        Serial.println("sleep!");
+        M5.Power.lightSleep(SLEEP_TIMEOUT * 1000, true);
+        Serial.println("wakeup!");
+        if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER)
+        {
+            lastAction = 0;
+        }
+        else
+        {
+            lastAction = millis();
+        }
+        dockManager.updateDateBattery();
+        display.fillCircle(display.width() * .5, display.height() - M5EPD_DOCK_HEIGHT / 2, 16, TFT_BLACK);
+        display.display();
+    }
+
+
     keyboard.scan();
     if (keyboard.isKeyPressed())
     {
+        lastAction = millis();
         char key = keyboard.getChar();
         Serial.println("key");
         Serial.println(key);
@@ -69,6 +111,7 @@ void loop()
     M5.Touch.update(millis());
     if (M5.Touch.getDetail().wasPressed() || M5.Touch.getDetail().isPressed())
     {
+        lastAction = millis();
         const m5::touch_point_t touch = M5.Touch.getTouchPointRaw(0);
         Serial.printf("Touch detected at x: %d, y: %d\n", touch.x, touch.y);
         dockManager.handleTouchEvent(touch.x, touch.y);

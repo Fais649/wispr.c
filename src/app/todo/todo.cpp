@@ -83,18 +83,45 @@ void Todo::drawList()
     display.print("todo;");
 
     display.setTextSize(3);
+
     for (size_t i = 0; i < tasks.size(); ++i)
     {
+        String symbol = "[x]";
+        String currentTask = tasks[i];
         display.setCursor(rectX + 35, (i + 1.2) * rectY + 100);
         if (i == selectedTaskIndex)
         {
-            display.setTextColor(TFT_DARKGREY, TFT_BLACK);
+            Serial.println("drawing list cursor");
+
+            display.setTextColor(TFT_LIGHTGREY);
+            if (currentTask.charAt(0) == '%')
+            {
+                currentTask = currentTask.substring(1);
+                symbol = "---[x]";
+            }
+            else
+            {
+                symbol = "[x]";
+            }
+
+            display.printf("%s - %s\n", symbol.c_str(), currentTask.c_str());
         }
         else
         {
-            display.setTextColor(TFT_WHITE);
+            if (currentTask.charAt(0) == '%')
+            {
+                currentTask = currentTask.substring(1);
+                display.setTextColor(TFT_DARKGREY);
+                symbol = "---[+]";
+            }
+            else
+            {
+                display.setTextColor(TFT_WHITE);
+                symbol = "[" + String(i + 1) + "]";
+            }
+
+            display.printf("%s - %s\n", symbol.c_str(), currentTask.c_str());
         }
-        display.printf("[%d] - %s\n", i + 1, tasks[i].c_str());
     }
 }
 
@@ -123,11 +150,76 @@ void Todo::handleKeyPress(const char *key)
             _newEnter = true;
             render();
         }
+        else if (keyIn == 0xB5 || keyIn == 0xB6)
+        {
+            if (tasks.size() <= 0)
+            {
+                selectedTaskIndex = -1;
+            }
+            else if (keyIn == 0xB5)
+            {
+                if (selectedTaskIndex == -1)
+                {
+                    selectedTaskIndex = tasks.size();
+                }
+
+                Serial.println("index++");
+                if (selectedTaskIndex >= 1)
+                {
+                    selectedTaskIndex--;
+                }
+                Serial.println(selectedTaskIndex);
+            }
+            else if (keyIn == 0xB6)
+            {
+                if (selectedTaskIndex == -1)
+                {
+                    selectedTaskIndex = 0;
+                }
+                Serial.println("index--");
+                if (selectedTaskIndex < tasks.size() - 1)
+                {
+                    selectedTaskIndex++;
+                }
+                Serial.println(selectedTaskIndex);
+            }
+            render();
+        }
+        else if (keyIn == 0x7F)
+        {
+            if (selectedTaskIndex != -1)
+            {
+                tasks.erase(tasks.begin() + selectedTaskIndex);
+            }
+
+            render();
+        }
+        else if (keyIn == 0x09)
+        {
+            if (selectedTaskIndex != -1)
+            {
+                String selectedTask = tasks[selectedTaskIndex];
+                if (selectedTask.charAt(0) != '%')
+                {
+                    String marker = "%";
+                    marker.concat(selectedTask);
+                    selectedTask = marker;
+                    tasks.erase(tasks.begin() + selectedTaskIndex);
+                    tasks.push_back(selectedTask);
+                }
+            }
+
+            render();
+        }
         else
         {
             _task.concat(*key);
             _newKey = true;
             render();
+        }
+        if (selectedTaskIndex == 0 && tasks.size() == 0)
+        {
+            selectedTaskIndex = -1;
         }
     }
 }

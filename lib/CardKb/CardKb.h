@@ -8,12 +8,14 @@
 #define CARDKB_ADDR 0x5F
 #define BACKSPACE 8
 
-class CardKb {
+class CardKb
+{
 public:
-    CardKb() { Wire.begin(25,32, 400000U);};
+    CardKb() { Wire.begin(25, 32, 400000U); };
     void scan();
     char getChar();
     bool isKeyPressed();
+    void wakeup() { Wire.begin(25, 32, 40000U); }
 
 private:
     char _lastChar;
