@@ -8,7 +8,8 @@
 // class Buttons
 // {
 // public:
-//     Buttons(m5::Button_Class &btnL, m5::Button_Class &btnP, m5::Button_Class &btnR);
+//     Buttons(m5::Button_Class &btnL, m5::Button_Class &btnP, m5::Button_Class
+//     &btnR);
 //         void update();
 
 // private:

@@ -4,6 +4,4 @@ void Calendar::save() {};
 void Calendar::load() {};
 void Calendar::render() {};
 
-void Calendar::handleKeyPress(const char *key)
-{
-}
+void Calendar::handleKeyPress(const char *key) {}

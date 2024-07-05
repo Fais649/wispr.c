@@ -5,8 +5,8 @@
 
 class StorageManager {
 public:
-    void saveData(const String& key, const String& data);
-    String loadData(const String& key);
+  void saveData(const String &key, const String &data);
+  String loadData(const String &key);
 };
 
 #endif

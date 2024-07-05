@@ -1,19 +1,11 @@
-#include "time_keeper.h"
+#include <time_keeper.h>
 
-void moveForward(int days)
-{
-}
+void moveForward(int days) {}
 
-void moveBackward(int days)
-{
-}
+void moveBackward(int days) {}
 
-String getFormattedDate()
-{
-}
+String getFormattedDate() { return ""; }
 
-String getFormattedTime()
-{
-}
+String getFormattedTime() { return ""; }
 
 TimeKeeper timeKeeper;

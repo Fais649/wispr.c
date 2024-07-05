@@ -1,11 +1,11 @@
 #ifndef HARDWARE_H
-#define HARDWARE_H 
+#define HARDWARE_H
 
-#include <Arduino.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "power.h"
 #include "globals.h"
+#include "power.h"
+#include <Arduino.h>
 // #include "ports.h"
 #include "display.h"
 // #include "touch_panel.h"

@@ -5,6 +5,6 @@
 
 class AppLoader {
 public:
-    Application* loadApp(AppName appName);
+  Application *loadApp(AppName appName);
 };
 #endif
