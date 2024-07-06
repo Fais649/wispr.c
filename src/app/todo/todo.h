@@ -16,6 +16,7 @@ public:
   void handleKeyPress(const char *key) override;
 
 private:
+  void saveLastInputs();
   std::vector<String> tasks;
   int selectedTaskIndex = -1;
   String _task = "";

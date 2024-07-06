@@ -175,8 +175,11 @@ void DockManager::handleTouchEvent(int x, int y) {
             apps[index]); // Switch to the selected app
       }
 
+      Serial.println("saving selectedAppIndex: ");
+      Serial.println(selectedAppIndex);
       savedDock.begin("saved_dock");
-      savedDock.putInt("selected_app_index", selectedAppIndex);
+      savedDock.clear();
+      savedDock.putInt("app_index", selectedAppIndex);
       savedDock.end();
       setDirty();
       render();
@@ -185,15 +188,26 @@ void DockManager::handleTouchEvent(int x, int y) {
 }
 
 void DockManager::restore() {
+  Serial.println("starting pref savedDock");
   savedDock.begin("saved_dock");
-  selectedAppIndex = savedDock.getInt("selected_app_index", -1);
+  selectedAppIndex = savedDock.getInt("app_index", -1);
+  savedDock.clear();
   savedDock.end();
 
+  batteryBegin();
+
+  Serial.println("loading selectedAppIndex: ");
+  Serial.println(selectedAppIndex);
+
+  Serial.println("dockmanager::appssize ");
+  Serial.println(apps.size());
   if (selectedAppIndex > -1 && selectedAppIndex < apps.size()) {
     windowManager->addWindow(apps[selectedAppIndex]);
     windowManager->switchToWindow(apps[selectedAppIndex]);
+    windowManager->render();
   }
   setDirty();
+  render();
 }
 
 void DockManager::setDirty() { isDirty = true; }

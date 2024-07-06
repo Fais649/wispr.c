@@ -13,12 +13,26 @@ void Todo::save() {
       savedTodos.putString("todo_item_" + i, tasks[i]);
     }
   }
+  saveLastInputs();
+  savedTodos.end();
+}
+
+void Todo::saveLastInputs() {
+  savedTodos.begin("saved_todos");
+  if (_task.length() > 0) {
+    savedTodos.putString("last_inputs", _task);
+  } else {
+    savedTodos.putString("last_inputs", "");
+  }
   savedTodos.end();
 }
 
 void Todo::load() {
   savedTodos.begin("saved_todos");
   int itemCount = savedTodos.getInt("item_count");
+  String lastInputs = savedTodos.getString("last_inputs", "");
+  savedTodos.end();
+
   for (size_t i = 0; i < itemCount; i++) {
     String item = savedTodos.getString("todo_item_" + i);
 
@@ -26,7 +40,10 @@ void Todo::load() {
       tasks.push_back(item);
     }
   }
-  savedTodos.end();
+
+  if (lastInputs.length() > 0) {
+    _task = lastInputs;
+  }
 }
 
 void Todo::render() {
@@ -35,6 +52,7 @@ void Todo::render() {
 
   if (_newKey) {
     drawText();
+    saveLastInputs();
   } else {
     drawList();
   }
