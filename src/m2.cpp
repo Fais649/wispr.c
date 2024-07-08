@@ -136,7 +136,7 @@
 // void renderChecklist()
 // {
 //   display.fillRect(cursorStartX, cursorStartY, itemWidth, itemStartOffsetY - cursorStartY, TFT_BLACK); // Clear the checklist header area
-//   display.setTextSize(textSize);
+//   //display.setTextSize(textSize);
 //   display.setTextColor(textColorDefault);
 //   display.setCursor(cursorStartX, cursorStartY);
 //   display.print("Checklist:");
@@ -193,7 +193,7 @@
 // void renderInput()
 // {
 //   display.setEpdMode(epd_fastest);
-//   display.setTextSize(textSize);
+//   //display.setTextSize(textSize);
 //   display.setTextColor(textColorDefault);
 //   display.setCursor(cursorStartX, cursorStartY + inputOffsetY);
 //   display.print("Input: " + currentInput);

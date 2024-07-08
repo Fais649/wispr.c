@@ -9,5 +9,6 @@
 
 #include <hardware.h>
 #include <time_keeper.h>
+#include <layout.h>
 
 #endif

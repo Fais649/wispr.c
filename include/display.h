@@ -39,13 +39,14 @@ public:
                      uint32_t color);
   void setTextColor(uint16_t color);
   void setTextColor(uint16_t color, uint16_t backgroundColor);
-  void setTextSize(uint8_t size);
+  void setTextSize(float size);
   void setCursor(int16_t x, int16_t y);
   void print(const char *str);
   void printf(const char *format, ...);
   void setWindow(int x, int y, int w, int h);
   void setEpdMode(epd_mode_t epd_mode);
   void setAutoDisplay(bool value);
+  void setFont(const lgfx::IFont* font);
   // Add more methods as needed...
 
 private:

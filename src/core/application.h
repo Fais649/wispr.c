@@ -13,6 +13,7 @@ public:
   virtual AppName getAppName() = 0;
   virtual void render() = 0;
   virtual void handleKeyPress(const char *key) {};
+  void drawWindow(String window_content_title = "NOPE!!");
 };
 
 #endif

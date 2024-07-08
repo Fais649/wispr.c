@@ -37,8 +37,10 @@ void setup() {
   display.setRotation(1);
   display.setEpdMode(epd_fastest);
   display.setAutoDisplay(false);
+  display.setFont(Layout::window_content_text_font);
   M5.Rtc.begin();
 
+  Serial.print("Font data size: ");
   Application *app1 = appLoader.loadApp(AppName::TODO);
   Application *app2 = appLoader.loadApp(AppName::NOTE);
 
@@ -88,15 +90,16 @@ void setup() {
 }
 
 void loop() {
-    _is_charging = M5.Power.isCharging();
-    if (_is_charging && !_was_charging) {
-        _was_charging = true;
-    } else if (!_is_charging && _was_charging) {
-        _was_charging = false;
-        _update_battery_once = true;
-    }
+  _is_charging = M5.Power.isCharging();
+  if (_is_charging && !_was_charging) {
+    _was_charging = true;
+  } else if (!_is_charging && _was_charging) {
+    _was_charging = false;
+    _update_battery_once = true;
+  }
 
-  if (millis() - lastBatteryUpdate >= UPDATE_BATTERY_TIMEOUT || _update_battery_once) {
+  if (millis() - lastBatteryUpdate >= UPDATE_BATTERY_TIMEOUT ||
+      _update_battery_once) {
     Serial.println("loop::updatingBat");
     dockManager.updateDateBattery();
     display.display();
@@ -113,7 +116,8 @@ void loop() {
                        TFT_BLACK);
     display.display();
     Serial.println("loop::sleep!");
-    M5.Power.deepSleep(UPDATE_BATTERY_TIMEOUT * 1000, true);
+    long waketime = 3600000000;
+    M5.Power.deepSleep(micros() + waketime, true);
   }
 
   keyboard.scan();
@@ -133,7 +137,7 @@ void loop() {
     lastAction = millis();
     const m5::touch_point_t touch = M5.Touch.getTouchPointRaw(0);
     Serial.printf("Touch detected at x: %d, y: %d\n", touch.x, touch.y);
-    dockManager.handleTouchEvent(touch.x, touch.y);
+    dockManager.handleTouchEvent(touch.y, touch.x);
     delay(100);
   }
 

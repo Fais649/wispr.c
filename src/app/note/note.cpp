@@ -31,7 +31,7 @@ void Note::load() {
 
 void Note::render() {
   Serial.println("NOTE RENDER");
-  display.setWindow(rectX, rectY, rectWidth, rectHeight);
+  display.setWindow(Layout::window_x_abs, Layout::window_y_abs, Layout::window_width_abs, Layout::window_height_abs);
 
   if (_newKey) {
     drawText();
@@ -49,37 +49,37 @@ void Note::drawText() {
   display.setEpdMode(epd_fastest);
   Serial.println("TEXT RENDER");
   Serial.println(_task);
-  display.setWindow(rectX, rectY + rectHeight - inputHeight, rectWidth,
+  display.setWindow(Layout::window_x_abs, Layout::window_y_abs + Layout::window_height_abs - inputHeight, Layout::window_width_abs,
                     inputHeight);
-  display.setTextSize(4);
+  //display.setTextSize(4);
   display.setTextColor(TFT_WHITE);
-  display.fillRect(rectX + 2 * paddingX,
-                   rectY + rectHeight - inputHeight - 2 * paddingY,
-                   rectWidth - 4 * paddingX, inputHeight, TFT_BLACK);
-  display.drawString(_task, rectX + 2 * paddingX,
-                     rectY + rectHeight - inputHeight - 2 * paddingY);
+  display.fillRect(Layout::window_x_abs + 2 * Layout::window_hor_margin,
+                   Layout::window_y_abs + Layout::window_height_abs - inputHeight - 2 * Layout::window_ver_margin,
+                   Layout::window_width_abs - 4 * Layout::window_hor_margin, inputHeight, TFT_BLACK);
+  display.drawString(_task, Layout::window_x_abs + 2 * Layout::window_hor_margin,
+                     Layout::window_y_abs + Layout::window_height_abs - inputHeight - 2 * Layout::window_ver_margin);
   display.display();
   _newKey = false;
 }
 
 void Note::drawList() {
   display.setEpdMode(epd_fastest);
-  display.fillRoundRect(rectX - paddingX / 3, rectY + paddingY / 3, rectWidth,
-                        rectHeight, 25, TFT_DARKGRAY);
-  display.fillRoundRect(rectX, rectY, rectWidth, rectHeight, 25, TFT_WHITE);
-  display.fillRoundRect(rectX + paddingX, rectY + paddingY,
-                        rectWidth - (2 * paddingX), rectHeight - (2 * paddingY),
+  display.fillRoundRect(Layout::window_x_abs - Layout::window_hor_margin / 3, Layout::window_y_abs + Layout::window_ver_margin / 3, Layout::window_width_abs,
+                        Layout::window_height_abs, 25, TFT_DARKGRAY);
+  display.fillRoundRect(Layout::window_x_abs, Layout::window_y_abs, Layout::window_width_abs, Layout::window_height_abs, 25, TFT_WHITE);
+  display.fillRoundRect(Layout::window_x_abs + Layout::window_hor_margin, Layout::window_y_abs + Layout::window_ver_margin,
+                        Layout::window_width_abs - (2 * Layout::window_hor_margin), Layout::window_height_abs - (2 * Layout::window_ver_margin),
                         15, TFT_BLACK);
 
-  display.setTextSize(5);
-  display.setCursor(rectX + 35, rectY + 35);
+  //display.setTextSize(5);
+  display.setCursor(Layout::window_x_abs + 35, Layout::window_y_abs + 35);
   display.setTextColor(TFT_WHITE);
 
   display.print("note;");
 
-  display.setTextSize(3);
+  //display.setTextSize(3);
   for (size_t i = 0; i < tasks.size(); ++i) {
-    display.setCursor(rectX + 35, (i + 1.2) * rectY + 100);
+    display.setCursor(Layout::window_x_abs + 35, (i + 1.2) * Layout::window_y_abs + 100);
     if (i == selectedTaskIndex) {
       display.setTextColor(TFT_DARKGREY, TFT_BLACK);
     } else {

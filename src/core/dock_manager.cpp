@@ -3,10 +3,19 @@
 
 Preferences savedDock;
 
+float circleRadius =
+    (Layout::dock_height_abs - (2 * Layout::dock_content_y_padding_abs)) * 0.5;
+
+float selectedCircleRadius = circleRadius * 0.75;
+
+float iconX =
+    Layout::dock_x_abs + Layout::dock_content_x_padding_abs + circleRadius;
+float iconY =
+    Layout::dock_y_abs + Layout::dock_content_y_padding_abs + circleRadius;
+
 void DockManager::addApp(Application *app) {
   apps.push_back(app);
-  appNames.push_back(
-      app->getAppName()); // Using typeid to get a unique name for each app
+  appNames.push_back(app->getAppName());
 }
 
 void DockManager::removeApp(Application *app) {
@@ -14,56 +23,39 @@ void DockManager::removeApp(Application *app) {
   if (it != apps.end()) {
     int index = std::distance(apps.begin(), it);
     apps.erase(it);
-    appNames.erase(appNames.begin() +
-                   index); // Optional: Remove the corresponding app name
+    appNames.erase(appNames.begin() + index);
   }
 }
 
 void DockManager::render() {
-  int dockHeight = M5EPD_DOCK_HEIGHT; // Example icon size
-  int x = 60;
-  int y = display.height() - dockHeight * 1.1;
-  int dockWidth = display.width() * 0.3;
-  int round = dockHeight / 2;
-
   Serial.println("ENTER RENDER");
-  display.setWindow(display.width() * 0.25, display.height() - dockHeight,
-                    display.width() * 0.50, dockHeight);
+  display.setWindow(Layout::dock_x_abs, Layout::dock_y_abs,
+                    Layout::dock_width_abs, Layout::dock_height_abs);
+
   if (!isDirty) {
     return;
   }
   Serial.println("WINDOW SET");
+  display.fillRoundRect(Layout::dock_x_abs, Layout::dock_y_abs,
+                        Layout::dock_width_abs, Layout::dock_height_abs,
+                        Layout::dock_border_radius_abs, TFT_WHITE);
 
-  // if (!windowManager->hasActiveWindow())
-  // {
-  //     Serial.println("NO ACTIVE WINDOW");
-  //     display.setEpdMode(epd_fastest);
-  //     display.setWindow(0, 0, display.width(), display.height() -
-  //     dockHeight); display.fillRect(0, 0, display.width(), display.height() -
-  //     dockHeight, TFT_BLACK); display.display(); display.display();
-  //     display.display();
-  // }
-
-  int iconX = x + 70 * apps.size() - 35;
-  display.fillRoundRect(-x, y, display.width() * 0.275, dockHeight, round,
-                        TFT_WHITE);
+  float newIconX = iconX;
   for (size_t i = 0; i < apps.size(); ++i) {
-    int circleRadius = dockHeight / 3;
-    iconX = x + 70 * i + 35;
-    int iconY = y + dockHeight / 2;
+    newIconX = newIconX +
+               (i * (Layout::dock_content_x_padding_abs + (circleRadius * 2)));
+    iconsX[i] = newIconX;
 
     if (i == selectedAppIndex) {
-      display.fillCircle(iconX, iconY, 20, TFT_BLACK);
-      display.fillCircle(iconX, iconY, circleRadius * .75, TFT_WHITE);
+      display.fillCircle(newIconX, iconY, circleRadius, TFT_BLACK);
+      display.fillCircle(newIconX, iconY, selectedCircleRadius, TFT_WHITE);
       display.setEpdMode(epd_fastest);
     } else {
-      display.fillCircle(iconX, iconY, 20, TFT_BLACK);
+      display.fillCircle(newIconX, iconY, circleRadius, TFT_BLACK);
     }
-
-    display.setTextColor(TFT_WHITE, TFT_BLACK);
-    display.setCursor(iconX, iconY + dockHeight + 2);
   }
 
+  display.setTextColor(TFT_WHITE, TFT_BLACK);
   updateDateBattery();
 
   if (isFirstRender) {
@@ -78,19 +70,14 @@ void DockManager::render() {
 }
 
 void DockManager::updateDateBattery() {
-  int x = 60;
-  int y = display.height() - dockHeight * 1.1;
-  int dockWidth = display.width() * 0.3;
-  int round = dockHeight / 2;
-
   m5::rtc_date_t date;
   M5.Rtc.getDate(&date);
   String year = String(date.year);
   String month = String(date.month);
   String day = String(date.date);
 
-  display.setTextSize(3);
-  display.setTextColor(TFT_BLACK, TFT_WHITE);
+  display.setTextSize(Layout::dock_text_size);
+  display.setTextColor(TFT_BLACK);
   int mv = getBatteryVoltage();
   Serial.println("VOLTAGE");
   Serial.println(mv);
@@ -101,12 +88,15 @@ void DockManager::updateDateBattery() {
     batterySymbol = "|";
   }
 
-  display.fillRoundRect(display.width() * 0.65, y + dockHeight * 0.1,
-                        display.width() * 0.5, dockHeight * 0.95,
-                        dockHeight * .5, TFT_WHITE);
-  display.drawString(battery + batterySymbol + " ; " + year + "-" + month +
-                         "-" + day,
-                     display.width() * 0.68, (y + dockHeight * 0.35));
+  display.fillRoundRect(Layout::dock_right_x_abs, Layout::dock_right_y_abs,
+                        Layout::dock_right_width_abs,
+                        Layout::dock_right_height_abs,
+                        Layout::dock_border_radius_abs, TFT_WHITE);
+
+  display.drawString(
+      battery + batterySymbol + " < " + year + "." + month + "." + day + " >",
+      Layout::dock_right_x_abs + Layout::dock_right_content_x_padding_abs,
+      Layout::dock_right_y_abs + Layout::dock_right_content_y_padding_abs);
 }
 
 void DockManager::batteryBegin() {
@@ -143,36 +133,39 @@ uint32_t DockManager::getBatteryVoltage() {
 }
 
 int DockManager::averageBatteryLevel(int mv) {
-  const int minVoltage = BASE_VOLATAGE; // Minimum voltage in mV
-  const int maxVoltage = 4200;          // Maximum voltage in mV
-
-  // Ensure voltage is within range
+  const int minVoltage = BASE_VOLATAGE;
+  const int maxVoltage = 4200;
   if (mv < minVoltage)
     mv = minVoltage;
   if (mv > maxVoltage - 20)
     mv = maxVoltage;
 
-  // Calculate charge level percentage
   int level = (mv - minVoltage) * 100 / (maxVoltage - minVoltage);
   return level;
 }
 
 void DockManager::handleTouchEvent(int x, int y) {
-  if (x < dockHeight) {
-    int index = (y / (60)) - 1;
-    if (index >= 0 && index < apps.size() && y >= 40) {
+  if (y < Layout::dock_height_abs) {
+    int index = 0;
+    if (index >= 0 && index < apps.size()) {
+      for (int i = 0; i < apps.size(); i++) {
+        if (x >= iconsX[i] - circleRadius && x < iconsX[i] + circleRadius) {
+          index = i;
+          break;
+        }
+        index = 0;
+      }
+
       if (index == selectedAppIndex) {
         Serial.println("REMOVE WINDOW");
         windowManager->removeWindow(apps[index]);
         windowManager->setDirty();
         windowManager->render();
-        delay(50);
         selectedAppIndex = -1;
       } else {
         selectedAppIndex = index;
         windowManager->addWindow(apps[index]);
-        windowManager->switchToWindow(
-            apps[index]); // Switch to the selected app
+        windowManager->switchToWindow(apps[index]);
       }
 
       Serial.println("saving selectedAppIndex: ");
@@ -184,6 +177,8 @@ void DockManager::handleTouchEvent(int x, int y) {
       setDirty();
       render();
     }
+  } else if (x > Layout::dock_right_x_abs) {
+    // handle dateSwitch
   }
 }
 

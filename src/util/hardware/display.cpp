@@ -157,7 +157,7 @@ void Display::setTextColor(uint16_t color, uint16_t backgroundColor) {
   unlock();
 }
 
-void Display::setTextSize(uint8_t size) {
+void Display::setTextSize(float size) {
   lock();
   epd_driver->setTextSize(size);
   unlock();
@@ -204,4 +204,8 @@ void Display::setAutoDisplay(bool value) {
   unlock();
 }
 
-// Add more methods as needed...
+void Display::setFont(const lgfx::IFont *font) {
+  lock();
+  epd_driver->setFont(font);
+  unlock();
+}

@@ -36,6 +36,7 @@ private:
   int dockHeight = M5EPD_DOCK_HEIGHT; // Example icon size
   esp_adc_cal_characteristics_t *_adc_chars;
   float filteredVoltage = 0; // Variable to store the filtered voltage
+  int iconsX[2] = {0,0};
 };
 
 #endif // DOCK_MANAGER_H
