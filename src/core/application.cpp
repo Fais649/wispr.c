@@ -1,6 +1,6 @@
 #include "application.h"
 
-void Application::drawWindow(String window_content_title) {
+void Application::drawWindow() {
   display.fillRoundRect(
       (Layout::window_x_abs - Layout::window_border_abs) *
           Layout::shadow_x_modifier,
@@ -30,7 +30,7 @@ void Application::drawWindow(String window_content_title) {
   display.setCursor(Layout::window_x_abs + Layout::window_content_x_padding_abs,
                     Layout::window_y_abs +
                         Layout::window_content_y_padding_abs);
-  display.print(window_content_title.c_str());
+  display.print(getAppTitle().c_str());
 
   display.setFont(Layout::window_content_text_font);
   display.setTextSize(Layout::window_content_text_size);

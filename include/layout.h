@@ -16,6 +16,9 @@ extern float dock_text_size;
 extern float display_width;
 extern float display_height;
 
+extern epd_mode_t display_mode_fastest;
+extern epd_mode_t display_mode_slowest;
+
 // NO CALLING, ONLY TOUCHING
 extern float dock_ver_margin;
 extern float dock_hor_margin;
@@ -44,6 +47,18 @@ extern float shadow_y_modifier;
 extern float shadow_width_modifier;
 extern float shadow_height_modifier;
 //
+
+extern float sleep_icon_color_abs;
+extern float sleep_icon_content_color_abs;
+
+extern char sleep_icon[2];
+extern char finger_icon[2];
+extern float sleep_icon_size;
+extern float sleep_icon_radius_abs;
+extern float sleep_icon_x_abs;
+extern float sleep_icon_y_abs;
+extern float sleep_icon_wrapper_x_abs;
+extern float sleep_icon_wrapper_y_abs;
 
 // NO TOUCHING, ONLY CALLING
 extern float dock_ver_margin_abs;

@@ -11,4 +11,6 @@
 #include <time_keeper.h>
 #include <layout.h>
 
+extern int lastAction;
+
 #endif

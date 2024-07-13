@@ -1,10 +1,11 @@
-#include "Todo.h"
 #include "todo.h"
 #include <Preferences.h>
 
 Preferences savedTodos;
 
 float inputHeight = Layout::window_content_height_abs * 0.08;
+
+String Todo::getAppTitle() { return "todo;"; }
 
 void Todo::save() {
   savedTodos.begin("saved_todos");
@@ -51,10 +52,14 @@ void Todo::load() {
   }
 }
 
-void Todo::render() {
+void Todo::render(bool fullRender) {
   Serial.println("TODO RENDER");
-  display.setWindow(Layout::window_x_abs, Layout::window_y_abs,
-                    Layout::window_width_abs, Layout::window_height_abs);
+  if (fullRender) {
+    drawList();
+    drawText();
+    display.display();
+    return;
+  }
 
   if (_newKey) {
     drawText();
@@ -64,39 +69,22 @@ void Todo::render() {
   }
 
   display.display();
-  display.display();
-  display.display();
   save();
 }
 
-void Todo::drawText() {
-  display.setEpdMode(epd_fastest);
+void Todo::drawText(int textColor) {
   Serial.println("TEXT RENDER");
   Serial.println(_task);
-  display.setWindow(Layout::window_content_x_abs,
-                    Layout::window_content_y_abs +
-                        Layout::window_content_height_abs - inputHeight,
-                    Layout::window_content_width_abs, inputHeight);
 
-  //display.setTextSize(4);
-  display.setTextColor(TFT_WHITE);
-  display.fillRect(Layout::window_content_x_abs,
-                   Layout::window_content_y_abs +
-                       Layout::window_content_height_abs - inputHeight,
-                   Layout::window_content_width_abs, inputHeight, TFT_BLACK);
-
+  display.setTextColor(textColor);
   display.drawString(_task, Layout::window_content_x_abs,
                      Layout::window_content_y_abs +
                          Layout::window_content_height_abs - inputHeight);
-  display.display();
   _newKey = false;
 }
 
 void Todo::drawList() {
-  display.setEpdMode(epd_fastest);
-  drawWindow("todo;");
   for (size_t i = 0; i < tasks.size(); ++i) {
-    String symbol = "[x]";
     String currentTask = tasks[i];
     display.setCursor(Layout::window_content_x_abs +
                           Layout::window_content_x_indent_abs,
@@ -104,35 +92,29 @@ void Todo::drawList() {
                           Layout::window_content_y_abs +
                           Layout::window_content_title_height_abs);
 
-    drawCursor(i, currentTask, symbol);
+    drawCursor(i, currentTask);
   }
 }
+void Todo::drawCursor(size_t i, String &currentTask) {
+  bool isSelected = (i == selectedTaskIndex);
+  bool isCompleted = (currentTask.charAt(0) == '%');
 
-void Todo::drawCursor(size_t i, String &currentTask, String &symbol) {
-  if (i == selectedTaskIndex) {
-    Serial.println("drawing list cursor");
+  Serial.println("drawing list cursor");
 
-    display.setTextColor(TFT_LIGHTGREY);
-    if (currentTask.charAt(0) == '%') {
-      currentTask = currentTask.substring(1);
-      symbol = "---[x]";
-    } else {
-      symbol = "[x]";
-    }
-
-    display.printf("%s - %s\n", symbol.c_str(), currentTask.c_str());
-  } else {
-    if (currentTask.charAt(0) == '%') {
-      currentTask = currentTask.substring(1);
-      display.setTextColor(TFT_DARKGREY);
-      symbol = "---[+]";
-    } else {
-      display.setTextColor(TFT_WHITE);
-      symbol = "[" + String(i + 1) + "]";
-    }
-
-    display.printf("%s - %s\n", symbol.c_str(), currentTask.c_str());
+  if (isCompleted) {
+    currentTask = currentTask.substring(1);
   }
+
+  display.setTextColor(isSelected ? TFT_WHITE
+                                  : (isCompleted ? TFT_WHITE : TFT_WHITE));
+  if (isSelected) {
+    display.setFont(Layout::dock_symbol_font);
+    display.setTextSize(1.5);
+    display.print(Layout::finger_icon);
+  }
+  display.setFont(nullptr);
+  display.setTextSize(Layout::window_content_text_size);
+  display.printf("%s\n", currentTask.c_str());
 }
 
 void Todo::handleKeyPress(const char *key) {
@@ -141,68 +123,78 @@ void Todo::handleKeyPress(const char *key) {
     Serial.println("todoKey");
     Serial.println(_task);
     Serial.print("Key pressed: ");
-    Serial.println(*key, HEX); // Print the key in hexadecimal format
+    Serial.println(*key, HEX);
 
-    if (keyIn == 8) {
+    switch (keyIn) {
+    case 8: // Backspace
       if (_task.length() > 0) {
+        drawText(TFT_BLACK);
         _task.remove(_task.length() - 1);
+        _newKey = true;
       }
-      _newKey = true;
-    } else if (keyIn == 0xD &&
-               tasks.size() < Layout::window_content_text_lines) {
-      addTask();
-      _newEnter = true;
-    } else if (keyIn == 0xB5 || keyIn == 0xB6) {
-      if (tasks.size() <= 0) {
-        selectedTaskIndex = -1;
-      } else if (keyIn == 0xB5) {
-        if (selectedTaskIndex == -1) {
-          selectedTaskIndex = tasks.size();
-        }
-
-        Serial.println("index++");
-        if (selectedTaskIndex >= 1) {
-          selectedTaskIndex--;
-        }
-        Serial.println(selectedTaskIndex);
-      } else if (keyIn == 0xB6) {
-        if (selectedTaskIndex == -1) {
-          selectedTaskIndex = 0;
-        }
-        Serial.println("index--");
-        if (selectedTaskIndex < tasks.size() - 1) {
-          selectedTaskIndex++;
-        }
-        Serial.println(selectedTaskIndex);
+      break;
+    case 0xD: // Enter
+      if (tasks.size() < Layout::window_content_text_lines) {
+        addTask();
+        _newEnter = true;
       }
-    } else if (keyIn == 0x7F) {
+      break;
+    case 0xB5: // Up arrow
+    case 0xB6: // Down arrow
+      handleNavigationKeys(keyIn);
+      break;
+    case 0x7F: // Delete
       if (selectedTaskIndex != -1) {
         tasks.erase(tasks.begin() + selectedTaskIndex);
       }
-    } else if (keyIn == 0x09) {
+      break;
+    case 0x09: // Tab
       if (selectedTaskIndex != -1) {
-        String selectedTask = tasks[selectedTaskIndex];
-        if (selectedTask.charAt(0) != '%') {
-          tasks[selectedTaskIndex] = "%" + selectedTask;
-        } else {
-          tasks[selectedTaskIndex] = selectedTask.substring(1);
-        }
+        String &selectedTask = tasks[selectedTaskIndex];
+        selectedTask = (selectedTask.charAt(0) == '%')
+                           ? selectedTask.substring(1)
+                           : "%" + selectedTask;
       }
-    } else {
-      Serial.println("addKey");
-      _task.concat(*key);
-      _newKey = true;
+      break;
+    default:
+      handleCharacterKey(keyIn);
+      break;
     }
     render();
-    if (selectedTaskIndex == 0 && tasks.size() == 0) {
+    if (selectedTaskIndex == 0 && tasks.empty()) {
       selectedTaskIndex = -1;
     }
   }
 }
 
+void Todo::handleNavigationKeys(char keyIn) {
+  if (tasks.empty()) {
+    selectedTaskIndex = -1;
+  } else if (keyIn == 0xB5 && selectedTaskIndex == -1) {
+    selectedTaskIndex = tasks.size();
+  } else if (keyIn == 0xB5 && selectedTaskIndex > -1) {
+    selectedTaskIndex--;
+  } else if (keyIn == 0xB6 && selectedTaskIndex < tasks.size() - 1) {
+    selectedTaskIndex++;
+  } else if (keyIn == 0xB6 && selectedTaskIndex == -1) {
+    selectedTaskIndex = 0;
+  }
+}
+
+void Todo::handleSpecialKeys(char keyIn) {
+  // Handle other special keys if needed
+}
+
+void Todo::handleCharacterKey(char keyIn) {
+  Serial.println("addKey");
+  _task.concat(keyIn);
+  _newKey = true;
+}
+
 void Todo::addTask() {
   if (_task.length() > 0) {
     tasks.push_back(_task);
+    drawText(TFT_BLACK);
     _task = "";
   }
 }

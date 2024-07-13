@@ -1,7 +1,8 @@
-#include "Note.h"
+#include "note.h"
 #include <Preferences.h>
 
 Preferences savedNotes;
+String Note::getAppTitle() { return "note;"; }
 
 void Note::save() {
   savedNotes.begin("saved_notes");
@@ -29,10 +30,8 @@ void Note::load() {
   savedNotes.end();
 }
 
-void Note::render() {
+void Note::render(bool fullRender) {
   Serial.println("NOTE RENDER");
-  display.setWindow(Layout::window_x_abs, Layout::window_y_abs, Layout::window_width_abs, Layout::window_height_abs);
-
   if (_newKey) {
     drawText();
   } else {
@@ -46,40 +45,50 @@ void Note::render() {
 }
 
 void Note::drawText() {
-  display.setEpdMode(epd_fastest);
+  display.setEpdMode(Layout::display_mode_fastest);
   Serial.println("TEXT RENDER");
   Serial.println(_task);
-  display.setWindow(Layout::window_x_abs, Layout::window_y_abs + Layout::window_height_abs - inputHeight, Layout::window_width_abs,
-                    inputHeight);
-  //display.setTextSize(4);
+  // display.setTextSize(4);
   display.setTextColor(TFT_WHITE);
   display.fillRect(Layout::window_x_abs + 2 * Layout::window_hor_margin,
-                   Layout::window_y_abs + Layout::window_height_abs - inputHeight - 2 * Layout::window_ver_margin,
-                   Layout::window_width_abs - 4 * Layout::window_hor_margin, inputHeight, TFT_BLACK);
-  display.drawString(_task, Layout::window_x_abs + 2 * Layout::window_hor_margin,
-                     Layout::window_y_abs + Layout::window_height_abs - inputHeight - 2 * Layout::window_ver_margin);
+                   Layout::window_y_abs + Layout::window_height_abs -
+                       inputHeight - 2 * Layout::window_ver_margin,
+                   Layout::window_width_abs - 4 * Layout::window_hor_margin,
+                   inputHeight, TFT_BLACK);
+  display.drawString(_task,
+                     Layout::window_x_abs + 2 * Layout::window_hor_margin,
+                     Layout::window_y_abs + Layout::window_height_abs -
+                         inputHeight - 2 * Layout::window_ver_margin);
   display.display();
   _newKey = false;
 }
 
 void Note::drawList() {
-  display.setEpdMode(epd_fastest);
-  display.fillRoundRect(Layout::window_x_abs - Layout::window_hor_margin / 3, Layout::window_y_abs + Layout::window_ver_margin / 3, Layout::window_width_abs,
-                        Layout::window_height_abs, 25, TFT_DARKGRAY);
-  display.fillRoundRect(Layout::window_x_abs, Layout::window_y_abs, Layout::window_width_abs, Layout::window_height_abs, 25, TFT_WHITE);
-  display.fillRoundRect(Layout::window_x_abs + Layout::window_hor_margin, Layout::window_y_abs + Layout::window_ver_margin,
-                        Layout::window_width_abs - (2 * Layout::window_hor_margin), Layout::window_height_abs - (2 * Layout::window_ver_margin),
-                        15, TFT_BLACK);
+  display.setEpdMode(Layout::display_mode_fastest);
+  display.fillRoundRect(Layout::window_x_abs - Layout::window_hor_margin / 3,
+                        Layout::window_y_abs + Layout::window_ver_margin / 3,
+                        Layout::window_width_abs, Layout::window_height_abs, 25,
+                        TFT_DARKGRAY);
+  display.fillRoundRect(Layout::window_x_abs, Layout::window_y_abs,
+                        Layout::window_width_abs, Layout::window_height_abs, 25,
+                        TFT_WHITE);
+  display.fillRoundRect(
+      Layout::window_x_abs + Layout::window_hor_margin,
+      Layout::window_y_abs + Layout::window_ver_margin,
+      Layout::window_width_abs - (2 * Layout::window_hor_margin),
+      Layout::window_height_abs - (2 * Layout::window_ver_margin), 15,
+      TFT_BLACK);
 
-  //display.setTextSize(5);
+  // display.setTextSize(5);
   display.setCursor(Layout::window_x_abs + 35, Layout::window_y_abs + 35);
   display.setTextColor(TFT_WHITE);
 
   display.print("note;");
 
-  //display.setTextSize(3);
+  // display.setTextSize(3);
   for (size_t i = 0; i < tasks.size(); ++i) {
-    display.setCursor(Layout::window_x_abs + 35, (i + 1.2) * Layout::window_y_abs + 100);
+    display.setCursor(Layout::window_x_abs + 35,
+                      (i + 1.2) * Layout::window_y_abs + 100);
     if (i == selectedTaskIndex) {
       display.setTextColor(TFT_DARKGREY, TFT_BLACK);
     } else {

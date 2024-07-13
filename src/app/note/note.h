@@ -9,11 +9,14 @@ public:
   AppName getAppName() { return AppName::NOTE; };
   void save() override;
   void load() override;
-  void render() override;
+  void render(bool fullRender = false) override;
   void drawText();
   void drawList();
   void addTask();
   void handleKeyPress(const char *key) override;
+
+protected:
+  String getAppTitle() override;
 
 private:
   std::vector<String> tasks;

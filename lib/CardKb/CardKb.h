@@ -11,11 +11,11 @@
 class CardKb
 {
 public:
-    CardKb() { Wire.begin(25, 32, 400000U); };
+    CardKb() { Wire.begin(18, 19, 400000U); };
     void scan();
     char getChar();
     bool isKeyPressed();
-    void wakeup() { Wire.begin(25, 32, 40000U); }
+    void wakeup() { Wire.begin(18, 19, 40000U); }
 
 private:
     char _lastChar;

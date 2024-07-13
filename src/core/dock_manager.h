@@ -1,8 +1,8 @@
 #ifndef DOCK_MANAGER_H
 #define DOCK_MANAGER_H
 
+#include "core/app_manager.h"
 #include "core/application.h"
-#include "core/window_manager.h"
 #include "global_includes.h"
 #include <esp_adc_cal.h>
 
@@ -14,15 +14,17 @@
 
 class DockManager {
 public:
-  DockManager(WindowManager *wm) : windowManager(wm) {}
+  DockManager(AppManager *wm) : appManager(wm) {}
   void addApp(Application *app);
   void removeApp(Application *app);
-  void render();
+  void render(bool fullRender = false);
   void handleTouchEvent(int x, int y);
   void setDirty();
   void batteryBegin();
   void updateDateBattery();
   void restore();
+  void drawSleepIcon(bool y);
+  AppManager *getAppManager() { return appManager; };
 
 private:
   int averageBatteryLevel(int samples = 10);
@@ -32,11 +34,11 @@ private:
   int selectedAppIndex = -1;
   bool isDirty = true;
   bool isFirstRender = true;
-  WindowManager *windowManager;       // Reference to the WindowManager
+  AppManager *appManager;             // Reference to the AppManager
   int dockHeight = M5EPD_DOCK_HEIGHT; // Example icon size
   esp_adc_cal_characteristics_t *_adc_chars;
   float filteredVoltage = 0; // Variable to store the filtered voltage
-  int iconsX[2] = {0,0};
+  int iconsX[2] = {0, 0};
 };
 
 #endif // DOCK_MANAGER_H

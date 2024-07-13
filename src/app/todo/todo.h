@@ -9,14 +9,20 @@ public:
   AppName getAppName() { return AppName::TODO; };
   void save() override;
   void load() override;
-  void render() override;
-  void drawText();
+  void render(bool fullRender = false) override;
+  void drawText(int textColor = TFT_WHITE);
   void drawList();
-  void drawCursor(size_t i, String &currentTask, String &symbol);
+  void drawCursor(size_t i, String &currentTask);
   void addTask();
   void handleKeyPress(const char *key) override;
 
+protected:
+  String getAppTitle() override;
+
 private:
+  void handleNavigationKeys(char keyIn);
+  void handleCharacterKey(char keyIn);
+  void handleSpecialKeys(char keyIn);
   void saveLastInputs();
   std::vector<String> tasks;
   int selectedTaskIndex = -1;

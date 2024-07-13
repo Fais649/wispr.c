@@ -11,9 +11,11 @@ public:
   virtual void save() = 0;
   virtual void load() = 0;
   virtual AppName getAppName() = 0;
-  virtual void render() = 0;
+  virtual void render(bool fullRender = false) = 0;
   virtual void handleKeyPress(const char *key) {};
-  void drawWindow(String window_content_title = "NOPE!!");
+  void drawWindow();
+  protected:
+    virtual String getAppTitle() = 0;
 };
 
 #endif
