@@ -5,7 +5,7 @@ namespace Layout {
 // NEVER TOUCH
 float display_width = 960;
 float display_height = 540;
-epd_mode_t display_mode_fastest = epd_fastest;
+epd_mode_t display_mode_fastest = epd_fast;
 epd_mode_t display_mode_quality = epd_quality;
 
 float dock_ver_margin = 0.03;
