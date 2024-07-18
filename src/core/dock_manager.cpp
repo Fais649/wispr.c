@@ -178,7 +178,7 @@ void DockManager::handleTouchEvent(int x, int y) {
   }
 }
 
-void DockManager::restore() {
+void DockManager::restoreState() {
   Serial.println("starting pref savedDock");
   savedDock.begin("saved_dock");
   selectedAppIndex = savedDock.getInt("app_index", -1);
@@ -213,4 +213,23 @@ void DockManager::drawSleepIcon(bool y) {
   display.display();
   display.setEpdMode(Layout::display_mode_fastest);
   display.setFont(Layout::window_content_title_font);
+}
+
+void DockManager::loadApps() {
+  Application *todoApp = appLoader->loadApp(AppName::TODO);
+  Application *noteApp = appLoader->loadApp(AppName::NOTE);
+
+  if (todoApp) {
+    addApp(todoApp);
+    Serial.println("main::log::noteAapp added");
+  } else {
+    Serial.println("main::error::todoApp is null!");
+  }
+
+  if (noteApp) {
+    addApp(noteApp);
+    Serial.println("main::log::noteApp added");
+  } else {
+    Serial.println("main::error::noteApp is null!");
+  }
 }

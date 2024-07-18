@@ -2,6 +2,7 @@
 #define DOCK_MANAGER_H
 
 #include "core/app_manager.h"
+#include <util/app_loader.h>
 #include "core/application.h"
 #include "global_includes.h"
 #include <esp_adc_cal.h>
@@ -14,7 +15,7 @@
 
 class DockManager {
 public:
-  DockManager(AppManager *wm) : appManager(wm) {}
+  DockManager(AppManager *am, AppLoader *al) : appManager(am), appLoader(al) {}
   void addApp(Application *app);
   void removeApp(Application *app);
   void render(bool fullRender = false);
@@ -22,9 +23,10 @@ public:
   void setDirty();
   void batteryBegin();
   void updateDateBattery();
-  void restore();
+  void restoreState();
   void drawSleepIcon(bool y);
   AppManager *getAppManager() { return appManager; };
+  void loadApps();
 
 private:
   int averageBatteryLevel(int samples = 10);
@@ -35,6 +37,7 @@ private:
   bool isDirty = true;
   bool isFirstRender = true;
   AppManager *appManager;             // Reference to the AppManager
+  AppLoader *appLoader;
   int dockHeight = M5EPD_DOCK_HEIGHT; // Example icon size
   esp_adc_cal_characteristics_t *_adc_chars;
   float filteredVoltage = 0; // Variable to store the filtered voltage

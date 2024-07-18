@@ -31,6 +31,6 @@ void Ticker::checkSleep() {
     M5.Power.setExtOutput(false);
     M5.Power.setUsbOutput(false);
     delay(100);
-    M5.Power.deepSleep(0, true);
+    M5.Power.powerOff();
   }
 }

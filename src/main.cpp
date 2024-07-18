@@ -11,11 +11,11 @@
 #include "util/typer.h"
 
 AppManager appManager;
-DockManager dockManager(&appManager);
+AppLoader appLoader;
+DockManager dockManager(&appManager, &appLoader);
 Ticker ticker(&dockManager);
 Typer typer(&dockManager);
 Toucher toucher(&dockManager);
-AppLoader appLoader;
 
 void setup() {
   Serial.begin(115200);
@@ -29,26 +29,10 @@ void setup() {
   display.setFont(Layout::window_content_text_font);
   M5.Rtc.begin();
 
-  Serial.println("main.setup::wakeupcause");
+  Serial.println("main::log::wakeup cause");
   Serial.println(esp_sleep_get_wakeup_cause());
 
-  Application *app1 = appLoader.loadApp(AppName::TODO);
-  Application *app2 = appLoader.loadApp(AppName::NOTE);
-
-  if (app1) {
-    dockManager.addApp(app1);
-    Serial.println("main.setup::app1 added");
-  } else {
-    Serial.println("main.setup::Error: app1 is null!");
-  }
-
-  if (app2) {
-    dockManager.addApp(app2);
-    Serial.println("main.setup::app2 added");
-  } else {
-    Serial.println("main.setup::Error: app2 is null!");
-  }
-
+  dockManager.loadApps();
   dockManager.batteryBegin();
   lastBatteryUpdate = millis();
   lastAction = millis();
@@ -58,7 +42,7 @@ void setup() {
   display.setEpdMode(Layout::display_mode_fastest);
   display.display();
   dockManager.drawSleepIcon(false);
-  dockManager.restore();
+  dockManager.restoreState();
 }
 
 void loop() {
