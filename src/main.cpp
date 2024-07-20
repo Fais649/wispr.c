@@ -1,14 +1,14 @@
-
 #include <CardKb.h>
 #include <esp_adc_cal.h>
-
-#include "core/app_manager.h"
-#include "core/dock_manager.h"
+#include "M5Unified/src/M5Unified.hpp"
+#include "app_manager.h"
+#include "dock_manager.h"
 #include "global_includes.h"
-#include "util/app_loader.h"
-#include "util/ticker.h"
-#include "util/toucher.h"
-#include "util/typer.h"
+#include "app_loader.h"
+#include "packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/esp_sleep.h"
+#include "ticker.h"
+#include "toucher.h"
+#include "typer.h"
 
 AppManager appManager;
 AppLoader appLoader;

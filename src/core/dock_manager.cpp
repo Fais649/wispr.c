@@ -59,11 +59,6 @@ void DockManager::render(bool fullRender) {
 }
 
 void DockManager::updateDateBattery() {
-  m5::rtc_date_t date;
-  M5.Rtc.getDate(&date);
-  String year = String(date.year);
-  String month = String(date.month);
-  String day = String(date.date);
 
   display.setTextSize(Layout::dock_text_size);
   display.setTextColor(TFT_BLACK, TFT_DARKGRAY);
@@ -86,8 +81,9 @@ void DockManager::updateDateBattery() {
                         Layout::dock_right_width_abs,
                         Layout::dock_right_height_abs,
                         Layout::dock_border_radius_abs, TFT_WHITE);
-  display.drawString(
-      battery + batterySymbol + " < " + year + "." + month + "." + day + " >",
+
+  String dateString = timeKeeper.getFormattedDate();
+  display.drawString(battery + batterySymbol + dateString,
       Layout::dock_right_x_abs + Layout::dock_right_content_x_padding_abs,
       Layout::dock_right_y_abs + Layout::dock_right_content_y_padding_abs);
 }

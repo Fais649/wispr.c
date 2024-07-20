@@ -2,8 +2,9 @@
 #define GLOBAL_INCLUDES_H
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <M5Unified.h>
-#include <core/application.h>
+#include <application.h>
 #include <map>
 #include <vector>
 

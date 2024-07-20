@@ -33,14 +33,18 @@ void AppManager::switchToApp(Application *app) {
 void AppManager::render() {
   if (isDirty) {
     if (activeApp != nullptr) {
+      display.setEpdMode(lgfx::v1::epd_mode::epd_quality);
       activeApp->drawWindow();
       activeApp->render(true);
+      display.setEpdMode(lgfx::v1::epd_mode::epd_fastest);
     } else {
       Serial.println("CLEARING APP");
       display.fillRect(0, 0, M5EPD_DISPLAY_WIDTH,
                        M5EPD_DISPLAY_HEIGHT - M5EPD_DOCK_HEIGHT * 1.3,
                        TFT_BLACK);
+      display.setEpdMode(epd_quality);
       display.display();
+      display.setEpdMode(lgfx::v1::epd_mode::epd_fastest);
     }
     isDirty = false;
   }

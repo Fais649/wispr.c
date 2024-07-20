@@ -1,11 +1,18 @@
 #include <time_keeper.h>
 
-void moveForward(int days) {}
+void TimeKeeper::moveForward(int days) {}
 
-void moveBackward(int days) {}
+void TimeKeeper::moveBackward(int days) {}
 
-String getFormattedDate() { return ""; }
+String TimeKeeper::getFormattedDate() {
+  m5::rtc_date_t date;
+  M5.Rtc.getDate(&date);
+  String year = String(date.year);
+  String month = String(date.month);
+  String day = String(date.date);
+  return " < " + year + "." + month + "." + day + " >";
+}
 
-String getFormattedTime() { return ""; }
+String TimeKeeper::getFormattedTime() { return ""; }
 
 TimeKeeper timeKeeper;

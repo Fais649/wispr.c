@@ -1,6 +1,0 @@
---log=verbose
---compile-commands-dir=$HOME/madR/gitR/wispR
---pch-storage=memory
---background-index
---clang-tidy
---clang-tidy-checks=-*,clang-diagnostic-*,modernize-*

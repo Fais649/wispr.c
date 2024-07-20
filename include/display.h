@@ -3,11 +3,11 @@
 
 #include "display_consts.h"
 #include "globals.h"
+#include "layout.h"
 #include <Arduino.h>
 #include <M5Unified.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
-#include "layout.h"
 
 struct Rect {
   int32_t x;
@@ -36,10 +36,10 @@ public:
   void drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color);
   void fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color);
   void drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color);
-  void drawTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
-                    int32_t x2, int32_t y2, uint32_t color);
-  void fillTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
-                    int32_t x2, int32_t y2, uint32_t color);
+  void drawTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2,
+                    int32_t y2, uint32_t color);
+  void fillTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2,
+                    int32_t y2, uint32_t color);
   void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r,
                      uint32_t color);
   void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r,
@@ -54,6 +54,7 @@ public:
   void setEpdMode(epd_mode_t epd_mode);
   void setAutoDisplay(bool value);
   void setFont(const lgfx::IFont *font);
+  void updateWindow();
 
 private:
   void lock();

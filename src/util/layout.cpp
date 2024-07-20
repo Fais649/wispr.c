@@ -109,6 +109,10 @@ float window_content_text_line_height_abs =
     (window_content_height_abs - window_content_title_height_abs) /
     window_content_text_lines;
 
+float window_content_text_y_abs =
+    Layout::window_content_y_abs + Layout::window_content_title_height_abs;
+float window_input_height_abs = Layout::window_content_height_abs * 0.08;
+
 float window_border_abs = window_border;
 float window_border_radius_abs = window_height_abs * window_border_radius;
 

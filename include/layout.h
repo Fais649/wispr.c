@@ -101,9 +101,12 @@ extern float window_content_height_abs;
 extern float window_content_x_indent_abs;
 extern float window_content_title_height_abs;
 extern float window_content_text_line_height_abs;
+extern float window_content_text_y_abs;
 
 extern float window_border_abs;
 extern float window_border_radius_abs;
+
+extern float window_input_height_abs;
 //
 
 } // namespace Layout

@@ -1,6 +1,6 @@
 #include "app_loader.h"
-#include "app/note/note.h"
-#include "app/todo/todo.h"
+#include "note.h"
+#include "todo.h"
 
 Application *AppLoader::loadApp(AppName appName) {
   switch (appName) {

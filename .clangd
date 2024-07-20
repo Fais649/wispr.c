@@ -1,0 +1,10 @@
+CompileFlags:
+  Add: [
+    -Ilib,
+    -Iinclude,
+    -I/home/fais649/.platformio,
+    -I/home/fais649/.platformio/packages/framework-arduinoespressif32/cores/esp32,
+    -I/home/fais649/.platformio/packages/framework-arduinoespressif32/libraries,
+    -I/home/fais649/.platformio/packages/framework-arduinoespressif32/variants/m5stack,
+    -I/home/fais649/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src,
+  ]

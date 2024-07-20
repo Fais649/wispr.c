@@ -3,21 +3,29 @@
 
 Preferences savedTodos;
 
-float inputHeight = Layout::window_content_height_abs * 0.08;
-
 String Todo::getAppTitle() { return "todo;"; }
 
 void Todo::save() {
-  savedTodos.begin("saved_todos");
+  JsonDocument todoDoc;
+  JsonObject root = todoDoc.to<JsonObject>();
   int itemCount = tasks.size();
+  root["date"] = timeKeeper.getFormattedDate();
+  root["item_count"] = itemCount;
+  root["last_inputs"] = _task;
+  JsonArray items = root["items"].to<JsonArray>();
 
-  savedTodos.putInt("item_count", itemCount);
   for (size_t i = 0; i < itemCount; i++) {
     if (tasks[i].length() > 0) {
-      savedTodos.putString("todo_item_" + i, tasks[i]);
+      items.add(tasks[i]);
     }
   }
-  saveLastInputs();
+
+  String fileName = root["date"];
+  String serializedData;
+  serializeJson(root, serializedData);
+
+  savedTodos.begin("saved_todos");
+  savedTodos.putString(fileName.c_str(), serializedData);
   savedTodos.end();
 }
 
@@ -32,20 +40,22 @@ void Todo::saveLastInputs() {
 }
 
 void Todo::load() {
-  savedTodos.begin("saved_todos");
   int itemCount = savedTodos.getInt("item_count");
+
+  savedTodos.begin("saved_todos");
   String lastInputs = savedTodos.getString("last_inputs", "");
+  String items = savedTodos.getString(timeKeeper.getFormattedTime().c_str());
   savedTodos.end();
 
-  savedTodos.begin("saved_todos");
-  for (size_t i = 0; i < itemCount; i++) {
-    String item = savedTodos.getString("todo_item_" + i);
+  JsonDocument todoData;
+  deserializeJson(todoData, items.c_str());
 
+  for (size_t i = 0; i < itemCount; i++) {
+    String item = todoData["items"][i];
     if (item.length() > 0) {
       tasks.push_back(item);
     }
   }
-  savedTodos.end();
 
   if (lastInputs.length() > 0) {
     _task = lastInputs;
@@ -65,6 +75,7 @@ void Todo::render(bool fullRender) {
     drawText();
     saveLastInputs();
   } else {
+    display.updateWindow();
     drawList();
   }
 
@@ -79,7 +90,7 @@ void Todo::drawText(int textColor) {
   display.setTextColor(textColor);
   display.drawString(_task, Layout::window_content_x_abs,
                      Layout::window_content_y_abs +
-                         Layout::window_content_height_abs - inputHeight);
+                         Layout::window_content_height_abs - Layout::window_input_height_abs);
   _newKey = false;
 }
 
@@ -95,6 +106,7 @@ void Todo::drawList() {
     drawCursor(i, currentTask);
   }
 }
+
 void Todo::drawCursor(size_t i, String &currentTask) {
   bool isSelected = (i == selectedTaskIndex);
   bool isCompleted = (currentTask.charAt(0) == '%');

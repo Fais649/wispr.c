@@ -90,6 +90,15 @@ void Display::drawString(const String &string, int32_t poX, int32_t poY) {
   unlock();
 }
 
+void Display::updateWindow() {
+  lock();
+  epd_driver->fillRect(Layout::window_content_x_abs,
+                       Layout::window_content_text_y_abs,
+                       Layout::window_content_width_abs,
+                       Layout::window_content_height_abs  - Layout::window_input_height_abs - Layout::window_content_title_height_abs, TFT_BLACK);
+  unlock();
+}
+
 void Display::display() {
   lock();
   for (const Rect &rect : dirtyRegions) {
@@ -201,12 +210,10 @@ void Display::setCursor(int16_t x, int16_t y) {
 
 void Display::print(const char *str) {
   lock();
-    epd_driver->fillRect(epd_driver->getCursorX(), epd_driver->getCursorY(),
-                 epd_driver->textWidth(str), epd_driver->fontHeight(), TFT_BLACK);
+  epd_driver->fillRect(epd_driver->getCursorX(), epd_driver->getCursorY(),
+                       epd_driver->textWidth(str), epd_driver->fontHeight(),
+                       TFT_BLACK);
   epd_driver->print(str);
-  // Assuming single line printing
-  addDirtyRegion(epd_driver->getCursorX(), epd_driver->getCursorY(),
-                 epd_driver->textWidth(str), epd_driver->fontHeight());
   unlock();
 }
 
@@ -217,8 +224,10 @@ void Display::printf(const char *format, ...) {
   va_start(args, format);
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
-      epd_driver->fillRect(epd_driver->getCursorX(), epd_driver->getCursorY(),
-                 Layout::window_content_width_abs - epd_driver->getCursorX(), epd_driver->fontHeight(), TFT_BLACK);
+  epd_driver->fillRect(epd_driver->getCursorX(), epd_driver->getCursorY(),
+                       Layout::window_content_width_abs -
+                           epd_driver->getCursorX(),
+                       epd_driver->fontHeight(), TFT_BLACK);
   epd_driver->print(buffer);
   addDirtyRegion(epd_driver->getCursorX(), epd_driver->getCursorY(),
                  epd_driver->textWidth(buffer), epd_driver->fontHeight());

@@ -1,4 +1,5 @@
 #include "ticker.h"
+#include "hal/gpio_types.h"
 int lastBatteryUpdate;
 bool _is_charging = false;
 bool _was_charging = false;
@@ -28,6 +29,9 @@ void Ticker::checkSleep() {
     Serial.println("main.loop::enteringSleep");
     dockManager->drawSleepIcon(true);
     Serial.println("main.loop::sleep!");
+    esp_sleep_enable_ext0_wakeup(
+        (gpio_num_t)M5EPD_KEY_PUSH_PIN,
+        0); // Wake up when button is pressed (GPIO goes LOW)
     M5.Power.setExtOutput(false);
     M5.Power.setUsbOutput(false);
     delay(100);
